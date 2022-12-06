@@ -1,0 +1,77 @@
+from machine import Pin, ADC
+import machine
+import utime
+
+pot = machine.ADC(26)
+
+LEDs = [6,7,8,9,10,11,12,13,14,15]
+
+led_pins = []
+
+delay = 0.002
+
+for x in range(0,10):
+    led_pins.append(Pin(LEDs[x], Pin.OUT, Pin.PULL_UP))
+    
+def check_delay():
+    global delay
+    if pot.read_u16() < 65535 and pot.read_u16() >55000:
+        delay = 0.001
+    elif pot.read_u16() <55000 and pot.read_u16() >45000:
+        delay = 0.002
+    elif pot.read_u16() <45000 and pot.read_u16() >35000:
+        delay = 0.003
+    elif pot.read_u16() <35000 and pot.read_u16() >25000:
+        delay = 0.004
+    elif pot.read_u16() <25000 and pot.read_u16() >15000:
+        delay = 0.006
+    elif pot.read_u16() <15000 and pot.read_u16() >5000:
+        delay = 0.008
+    elif pot.read_u16() <5000 and pot.read_u16() >224:
+        delay = 0.01
+    utime.sleep(delay)
+    
+        
+while True:
+  ############ Left to Right ##################  
+    for x in range(len(led_pins)-2):
+        
+        led_pins[x+1].value(1)
+        check_delay()
+        print("Hodnota je:", pot.read_u16())
+        led_pins[x].value(1)
+        check_delay()
+        print (delay)
+        print("Hodnota je:", pot.read_u16())
+        led_pins[x+1].value(1)
+        check_delay()
+        print("Hodnota je:", pot.read_u16())
+        led_pins[x+2].value(1)
+        check_delay()
+        print("Hodnota je:", pot.read_u16())
+        led_pins[x].value(0)
+        check_delay()
+        print("Hodnota je:", pot.read_u16())
+        led_pins[x+1].value(1)
+        check_delay()
+        print("Hodnota je:", pot.read_u16())
+        led_pins[x+2].value(0)
+        
+
+        
+  ############ Left to Right ##################  
+    for x in reversed(range(len(led_pins)-2)):
+        
+        led_pins[x+1].value(1)
+        check_delay()
+        led_pins[x].value(1)
+        check_delay()
+        led_pins[x+1].value(1)
+        check_delay()
+        led_pins[x+2].value(1)
+        check_delay()
+        led_pins[x].value(0)
+        check_delay()
+        led_pins[x+1].value(1)
+        check_delay()
+        led_pins[x+2].value(0)
