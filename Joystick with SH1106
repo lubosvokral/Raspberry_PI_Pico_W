@@ -1,0 +1,85 @@
+from machine import Pin, I2C, ADC
+from SH1106 import SH1106_I2C
+import utime
+import time
+
+xAxis = ADC(Pin(27))
+yAxis = ADC(Pin(26))
+button = Pin(17,Pin.IN, Pin.PULL_UP)
+WIDTH = 128
+HEIGHT = 64
+i2c = I2C(0, scl=Pin(9), sda=Pin(8), freq=200000)
+print("I2C Adresa        : "+hex(i2c.scan()[0]).upper())
+print("I2C Konfigurace   : "+str(i2c))
+oled = SH1106_I2C(WIDTH, HEIGHT, i2c)
+oled.fill(0)
+oled.show()
+
+led_left = Pin(14, Pin.OUT)
+led_middle = Pin(15, Pin.OUT)
+led_right = Pin(12, Pin.OUT)
+led_up = Pin(18, Pin.OUT)
+led_down = Pin(13, Pin.OUT)
+
+while True:
+    oled.fill(0)
+    oled.rect(0,0,127,63,1)
+    oled.rect(0,0,127,16,1)
+    xValue = xAxis.read_u16()
+    yValue = yAxis.read_u16()
+    wspol = 600.125
+    xFloat = (32727.5-xValue)/wspol
+    yFloat = (32767.5-yValue)/wspol
+    buttonValue = button.value()
+    xStatus = "middle"
+    yStatus = "middle"
+    buttonStatus = "not pressed"
+    
+    led_left.value(0)
+    led_middle.value(1)
+    led_right.value(0)
+    led_up.value(0)
+    led_down.value(0)
+    
+    if buttonValue == 0:
+        buttonStatus = "pressed"
+        led_middle.value(0)
+        
+    if xValue >= 60000:
+        xStatus = "right"
+        led_right.value(1)
+        led_middle.value(0)
+    
+    if xValue <= 1000:
+        xStatus = "left"
+        led_left.value(1)
+        led_middle.value(0)
+        
+    if yValue <=1000:
+        yStatus = "up"
+        led_up.value(1)
+        led_middle.value(0)
+        
+    if yValue >=60000:
+        yStatus = "down"
+        led_down.value(1)
+        led_middle.value(0)
+    
+    oled.text("Test joysticku",3 ,4)
+    oled.text("x    :"+xStatus,3 ,18)
+    oled.text("y    :"+yStatus,3 ,28)
+    oled.text("fire :"+buttonStatus,5 ,38)
+    oled.rect(0,48,127,15,1)
+    if int(xFloat)>=0:
+        oled.fill_rect(63,50,1+int(xFloat),4,1)
+    elif int(xFloat) <0:
+        oled.fill_rect(63+int(xFloat),50,abs(int(xFloat)),4,1)
+    if int(yFloat)>=0:
+        oled.fill_rect(63,56,1+int(yFloat),4,1)
+    elif int(yFloat) <0:
+        oled.fill_rect(63+int(yFloat),56,abs(int(yFloat)),4,1)
+    oled.show()
+    print("X:" + str(xValue) + " Y:" + str(yValue) + " -- button value: "+ str(buttonValue) + " button status: " + buttonStatus)
+    utime.sleep(0.5)
+    print(int(xFloat))
+    print(int(yFloat))
