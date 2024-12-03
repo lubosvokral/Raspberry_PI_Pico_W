@@ -1,0 +1,44 @@
+from machine import Pin, ADC
+import utime
+
+# Inicializace potenciometru a LED
+pot = ADC(26)  # Pin pro potenciometr
+LEDs = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+led_pins = [Pin(pin, Pin.OUT) for pin in LEDs]
+
+# Funkce pro výpočet zpoždění
+def get_delay():
+    value = pot.read_u16()
+    if value > 55000:
+        return 0.001
+    elif value > 45000:
+        return 0.002
+    elif value > 35000:
+        return 0.003
+    elif value > 25000:
+        return 0.004
+    elif value > 15000:
+        return 0.006
+    elif value > 5000:
+        return 0.008
+    else:
+        return 0.01
+
+# Funkce pro přechod LEDek zleva doprava
+def left_to_right():
+    for i in range(len(led_pins)):
+        led_pins[i].value(1)  # Rozsvítí LED
+        utime.sleep(get_delay())
+        led_pins[i].value(0)  # Zhasne LED
+
+# Funkce pro přechod LEDek zprava doleva
+def right_to_left():
+    for i in reversed(range(len(led_pins))):
+        led_pins[i].value(1)  # Rozsvítí LED
+        utime.sleep(get_delay())
+        led_pins[i].value(0)  # Zhasne LED
+
+# Hlavní smyčka
+while True:
+    left_to_right()  # Rozsvěcení zleva doprava
+    right_to_left()  # Rozsvěcení zprava doleva
